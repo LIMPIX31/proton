@@ -2,23 +2,6 @@ import { Varint } from '../datatypes/Varint'
 import { varint } from '../alias'
 import { ProtocolBuffer } from '../ProtocolBuffer'
 
-// export enum PacketType {
-//   Handshake = <any>0,
-//   LoginStart = <any>0,
-//   EncriptionRequest = <any>1,
-//   LoginSuccess = <any>2,
-//   JoinGame = <any>38,
-//   KeepAliveServer = <any>16,
-//   KeepAliveClient = <any>33,
-//   PlayerPositionAndLookClient = <any>56,
-//   PlayDisconnect = <any>26,
-//   UnloadChunk = <any>29,
-//   ClientSettings = <any>5,
-//   ChunkData = <any>34,
-//   UpdateViewPosition = <any>73,
-//   Unknown = <any>-1,
-// }
-
 export enum PacketState {
   Handshaking = 0,
   Status = 1,
