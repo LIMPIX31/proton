@@ -1,5 +1,17 @@
 import { DataTypeConstructor, isDTC } from './datatypes/DataType'
-import { byte, double, float, int, long, short, ubyte, uint, ulong, ushort, varint } from './alias'
+import {
+  byte,
+  double,
+  float,
+  int,
+  long,
+  short,
+  ubyte,
+  uint,
+  ulong,
+  ushort,
+  varint,
+} from './alias'
 import { Byte } from './datatypes/Byte'
 import { UByte } from './datatypes/UByte'
 import { Int } from './datatypes/Int'
@@ -16,9 +28,19 @@ import { String } from './datatypes/String'
 import { decode, encode, Tag } from 'nbt-ts'
 import { JSONChatComponent } from './packets/types/JSONChatComponent'
 import { TagToPlain } from './datatypes/nbt/NBTModel'
+import { BitSet } from './utils/BitSet'
+import {
+  IndirectPalette,
+  PalettedContainer,
+  SingleValuedPalette,
+} from './packets/types/ChunkData'
 
 export class ProtocolBuffer {
   private _data: Buffer = Buffer.alloc(0)
+
+  constructor(buf?: Buffer) {
+    buf && (this._data = buf)
+  }
 
   get buffer() {
     return this._data
@@ -68,6 +90,11 @@ export class ProtocolBuffer {
     return this
   }
 
+  writeProtocolBuffer(...value: ProtocolBuffer[]): this {
+    this.writeBuffer(...value.map(v => v.buffer))
+    return this
+  }
+
   writeByte(...value: byte[]): this {
     this.writeType(Byte, ...value)
     return this
@@ -104,7 +131,7 @@ export class ProtocolBuffer {
   }
 
   writeLong(...value: long[]): this {
-    this.writeType(Long, ...value)
+    this.writeType(Long, ...value.map(v => (v === undefined ? 0n : v)))
     return this
   }
 
@@ -148,8 +175,36 @@ export class ProtocolBuffer {
     return this
   }
 
+  writeBitSet(...value: BitSet[]): this {
+    this.writeBuffer(...value.map(v => v.data))
+    return this
+  }
+
+  writePalettedContainer(container: PalettedContainer): this {
+    this.writeUByte(container.bitsPerEntry)
+    if (container.bitsPerEntry === 0) {
+      const singlePalette = container.palette as SingleValuedPalette
+      this.writeVarint(singlePalette.value)
+    } else if (container.bitsPerEntry <= 8) {
+      const indirectPalette = container.palette as IndirectPalette
+      this.writeVarint(
+        indirectPalette.paletteLength ?? indirectPalette.palette.length,
+        ...indirectPalette.palette
+      )
+    }
+    this.writeVarint(
+      container.dataArrayLength ?? container.dataArray.length
+    ).writeLong(...container.dataArray)
+    return this
+  }
+
+  writePackedXZ(x: number, z: number): this {
+    this.writeByte(((x & 15) << 4) | (z & 15))
+    return this
+  }
+
   readBuffer(bufferLength: number): Buffer {
-    return this.read([this._data.slice(bufferLength), bufferLength])
+    return this.read([this._data.slice(0, bufferLength), bufferLength])
   }
 
   readByte(): byte {
@@ -217,6 +272,63 @@ export class ProtocolBuffer {
     return JSON.parse(this.readString())
   }
 
+  readBitSet(): BitSet {
+    const length = this.readVarint()
+    const longs = this.readLongArray(length)
+    const bitSet = new BitSet()
+    bitSet.longs = longs
+    return bitSet
+  }
+
+  readProtocolBuffer(length: number): ProtocolBuffer {
+    return new ProtocolBuffer(this.readBuffer(length))
+  }
+
+  readPalettedContainer(): PalettedContainer {
+    const bitsPerEntry = this.readUByte()
+    if (bitsPerEntry === 0) {
+      const value = this.readVarint()
+      const dataArrayLength = this.readVarint()
+      return {
+        bitsPerEntry,
+        palette: {
+          value,
+        },
+        dataArray: [],
+        dataArrayLength,
+      }
+    } else if (bitsPerEntry <= 8) {
+      const paletteLength = this.readVarint()
+      const palette = this.readVarintArray(paletteLength)
+      const dataArrayLength = this.readVarint()
+      const dataArray = this.readLongArray(dataArrayLength)
+      return {
+        bitsPerEntry,
+        palette: {
+          paletteLength,
+          palette,
+        },
+        dataArrayLength,
+        dataArray,
+      }
+    } else {
+      const dataArrayLength = this.readVarint()
+      const dataArray = this.readLongArray(dataArrayLength)
+      return {
+        bitsPerEntry,
+        dataArray,
+        dataArrayLength
+      }
+    }
+  }
+
+  readPackedXZ(): [x: number, z: number] {
+    const packed = this.readByte()
+    const z = packed & 15
+    const x = packed >> 4
+    return [x, z]
+  }
+
   readByteArray(arrayLength: number): byte[] {
     return this.readTypes(Byte, arrayLength)
   }
@@ -268,5 +380,4 @@ export class ProtocolBuffer {
   readStringArray(arrayLength: number): string[] {
     return this.readTypes(String, arrayLength)
   }
-
 }

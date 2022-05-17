@@ -9,6 +9,7 @@
     "declarationDir": "./lib/typings",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "strict": true,
     "skipLibCheck": true
   },

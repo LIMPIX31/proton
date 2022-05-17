@@ -12,6 +12,7 @@ export enum PacketType {
   KeepAliveClient = <any>33,
   PlayerPositionAndLookClient = <any>56,
   PlayDisconnect = <any>26,
+  UnloadChunk = <any>29,
   ClientSettings = <any>5,
   ChunkData = <any>34,
   Unknown = <any>-1,
@@ -25,7 +26,7 @@ export enum PacketState {
 }
 
 export interface PacketConstructor<T extends Packet> {
-  new(type?: number): T
+  new (type?: number): T
   type: number
   state: PacketState
 }
@@ -43,7 +44,7 @@ export class Packet extends ProtocolBuffer {
 
   decode() {}
 
-  static ejectPackets(data: Buffer, packets: Packet[] = []): Packet[] {
+  static ejectPackets(data: Buffer, packets: Packet[] = []): [Packet[], Buffer] {
     try {
       while (data.length > 0) {
         const [packet, offset] = Packet.from(data)
@@ -51,7 +52,7 @@ export class Packet extends ProtocolBuffer {
         packets.push(packet)
       }
     } catch (e) {}
-    return packets
+    return [packets, data]
   }
 
   static from(data: Buffer): [Packet, number] {
@@ -59,7 +60,7 @@ export class Packet extends ProtocolBuffer {
     const [type, o2] = new Varint().read(data.slice(o1))
     const packet = new Packet(type, -1)
     packet.buffer = data.slice(o1 + o2, length - 1 + o1 + o2)
-    if (packet.buffer.length < length - 1)
+    if (packet.buffer.length !== length - 1)
       throw new Error('Invalid packet length')
     return [packet, length + o1]
   }
@@ -80,7 +81,7 @@ export class Packet extends ProtocolBuffer {
     return Buffer.concat([
       new Varint().write(this.buffer.length + 1),
       new Varint().write(this.type),
-      this.buffer
+      this.buffer,
     ])
   }
 }

@@ -1,6 +1,6 @@
 import { UByte } from './UByte'
 
-export class Byte extends UByte{
+export class Byte extends UByte {
   read(data: Buffer): [result: number, offset: number] {
     return [data.slice(0, 1).readInt8(), 1]
   }
