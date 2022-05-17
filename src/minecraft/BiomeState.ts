@@ -1,11 +1,10 @@
 import { ChunkRelated } from './ChunkRelated'
 import { DataClass } from '../utils/DataClass'
 
-export class Biome extends ChunkRelated implements DataClass<Biome> {
+export class BiomeState implements DataClass<BiomeState> {
   private _id: number = 0
 
-  constructor(x: number, y: number, z: number, id: number = 0) {
-    super(x, y, z)
+  constructor(id: number = 0) {
     this._id = id
   }
 
@@ -17,11 +16,11 @@ export class Biome extends ChunkRelated implements DataClass<Biome> {
     this._id = type
   }
 
-  copy(biome: Biome){
+  copy(biome: BiomeState){
     this._id = biome._id
   }
 
-  equals(obj: Biome): boolean {
+  equals(obj: BiomeState): boolean {
     return this._id === obj._id
   }
 }

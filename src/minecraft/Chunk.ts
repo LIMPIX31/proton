@@ -1,19 +1,38 @@
-import { Block } from './Block'
-import { Light } from './Light'
+import { LightState } from './LightState'
 import { ChunkDataAndUpdateLightPacket } from '../packets/states/play/ChunkDataAndUpdateLightPacket'
 import { CompactArray } from '../utils/CompactArray'
 import { long } from '../alias'
-import { AirBlock } from './blocks/AirBlock'
-import { Biome } from './Biome'
+import { BiomeState } from './BiomeState'
 import { range } from '../utils/range'
+import { BlockState } from './BlockState'
+import { ChunkRelated } from './ChunkRelated'
+import { Position } from './Position'
+
+class BlockStateWithPosition extends ChunkRelated {
+  constructor(position: Position, public state: BlockState = new BlockState(0)) {
+    super(position.x, position.y, position.z)
+  }
+}
+
+class BiomeWithPosition extends ChunkRelated {
+  constructor(position: Position, public biome: BiomeState) {
+    super(position.x, position.y, position.z)
+  }
+}
+
+class LightWithPosition extends ChunkRelated {
+  constructor(position: Position, public light: LightState) {
+    super(position.x, position.y, position.z)
+  }
+}
 
 // FIXME: !!! Partial implementation !!!
 export class Chunk {
   private static readonly CHUNK_SIZE = 16
 
-  private blocks: Block[] = []
-  private lights: Light[] = []
-  private biomes: Biome[] = []
+  private blocks: BlockStateWithPosition[] = []
+  private lights: LightWithPosition[] = []
+  private biomes: BiomeWithPosition[] = []
 
   private readonly bitsPerHeightMapEntry: number
 
@@ -46,21 +65,22 @@ export class Chunk {
       const hasBlocks = this.hasSectionBlocks(section)
       const singleBiome = this.isSingleBiomeSection(section)
 
-      const orderedBlocks: Block[] = []
-      const orderedBiomes: Biome[] = []
+      const orderedBlocks: BlockState[] = []
+      const orderedBiomes: BiomeState[] = []
 
       for (const [x, y, z, n] of Chunk.sectionIterator()) {
         const yat = section * Chunk.CHUNK_SIZE + y
-        if (hasBlocks) orderedBlocks[n] = this.getBlockAt(x, yat, z)
-        if (!singleBiome) orderedBiomes[n] = this.getBiomeAt(x, yat, z)
+        const pos = new Position(x, yat, z)
+        if (hasBlocks) orderedBlocks[n] = this.getBlockAt(pos)
+        if (!singleBiome) orderedBiomes[n] = this.getBiomeAt(pos)
       }
 
       if (hasBlocks) {
         const palette: number[] = []
         const entries: number[] = []
         for (const block of orderedBlocks) {
-          if (!palette.includes(block.state.rawState)) palette.push(block.state.rawState)
-          entries.push(palette.indexOf(block.state.rawState))
+          if (!palette.includes(block.rawState)) palette.push(block.rawState)
+          entries.push(palette.indexOf(block.rawState))
         }
         let bitsPerBlock = Math.ceil(Math.log2(palette.length))
         bitsPerBlock < 4 && (bitsPerBlock = 4)
@@ -112,13 +132,13 @@ export class Chunk {
     return this.blocks.filter(v => v.x === x && v.z === z).sort((a, b) => b.y - a.y)?.[0]?.y ?? 0
   }
 
-  setBlock(block: Block) {
-    const replaceCandidate = this.blocks.find(v => v.samePosition(block))
+  setBlock(position: Position, block: BlockState) {
+    const replaceCandidate = this.blocks.find(v => v.samePosition(position))
     if (replaceCandidate) {
-      replaceCandidate.copy(block)
+      replaceCandidate.state.copy(block)
       return
     }
-    this.blocks.push(block)
+    this.blocks.push(new BlockStateWithPosition(position, block))
   }
 
   private getBlocksInSection(section: number) {
@@ -129,8 +149,8 @@ export class Chunk {
     return this.biomes.filter(v => v.y >= section * Chunk.CHUNK_SIZE && v.y < section * Chunk.CHUNK_SIZE + Chunk.CHUNK_SIZE)
   }
 
-  getBlockAt(x: number, y: number, z: number): Block {
-    return this.blocks.find(v => v.x === x && v.y === y && v.z === z) ?? new AirBlock(x, y, z)
+  getBlockAt(position: Position): BlockState {
+    return this.blocks.find(v => v.x === position.x && v.y === position.y && v.z === position.z)?.state ?? new BlockState(0)
   }
 
   private hasSectionBlocks(section: number) {
@@ -141,21 +161,21 @@ export class Chunk {
     return this.getBlocksInSection(section).filter(v => v.state.rawState !== 0).length
   }
 
-  setBiome(biome: Biome) {
-    const replaceCandidate = this.biomes.find(v => v.samePosition(biome))
+  setBiome(position: Position, biome: BiomeState) {
+    const replaceCandidate = this.biomes.find(v => v.samePosition(position))
     if (replaceCandidate) {
-      replaceCandidate.copy(biome)
+      replaceCandidate.biome.copy(biome)
       return
     }
-    this.biomes.push(biome)
+    this.biomes.push(new BiomeWithPosition(position, biome))
   }
 
-  getBiomeAt(x: number, y: number, z: number): Biome {
-    return this.biomes.find(v => v.x === x && v.y === y && v.z === z) ?? new Biome(x, y, z)
+  getBiomeAt(position: Position): BiomeState {
+    return this.biomes.find(v => v.x === position.x && v.y === position.y && v.z === position.z)?.biome ?? new BiomeState(0)
   }
 
   isSingleBiomeSection(section: number) {
-    return new Set(this.getBiomesInSection(section).map(v => v.type)).size <= 1
+    return new Set(this.getBiomesInSection(section).map(v => v.biome.type)).size <= 1
   }
 
   static* sectionIterator(): Generator<[x: number, y: number, z: number, n: number]> {
