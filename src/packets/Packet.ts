@@ -15,6 +15,7 @@ export enum PacketType {
   UnloadChunk = <any>29,
   ClientSettings = <any>5,
   ChunkData = <any>34,
+  UpdateViewPosition = <any>73,
   Unknown = <any>-1,
 }
 
