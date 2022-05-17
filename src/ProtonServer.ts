@@ -1,7 +1,6 @@
 import { TypedEmitter } from 'tiny-typed-emitter'
 import { KeepAliveClientPacket, Packet, PacketConstructor, PacketState } from './packets/Packet'
 import { AddressInfo, createServer, Server } from 'net'
-import { nanoid } from 'nanoid'
 
 type SendPacket = (packet: Packet) => void
 type SetState = (state: PacketState) => void
@@ -39,7 +38,7 @@ export class ProtonServer extends TypedEmitter<ProtonServerEvents> {
         state: PacketState.Handshaking,
         keepAliveThread: setInterval(() => {
           sendPacket(new KeepAliveClientPacket())
-        },20000),
+        },10000),
         packetBuffer: Buffer.alloc(0)
       }
       this.connections.push(connection)

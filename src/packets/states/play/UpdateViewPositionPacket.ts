@@ -1,16 +1,16 @@
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 import { varint } from '../../../alias'
 
 export class UpdateViewPositionPacket extends Packet {
 
-  static type: PacketType = PacketType.UpdateViewPosition
+  static type: number = 0x49
   static state: PacketState = PacketState.Play
 
   chunkX: varint = 0
   chunkZ: varint = 0
 
   constructor() {
-    super(UpdateViewPositionPacket.type, UpdateViewPositionPacket.state)
+    super(UpdateViewPositionPacket.state, UpdateViewPositionPacket.type)
   }
 
   encode() {

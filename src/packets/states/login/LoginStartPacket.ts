@@ -1,14 +1,14 @@
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 
 export class LoginStartPacket extends Packet {
 
-  static type: number = PacketType.LoginStart
+  static type: number = 0x00
   static state: number = PacketState.Login
 
   username: string = 'Player'
 
   constructor() {
-    super(LoginStartPacket.type, LoginStartPacket.state)
+    super(LoginStartPacket.state, LoginStartPacket.type)
   }
 
   decode(): void {

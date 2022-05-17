@@ -1,9 +1,9 @@
 import { byte, double, float, varint } from '../../../alias'
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 
 export class PlayerPositionAndLookClientPacket extends Packet {
 
-  static type: number = PacketType.PlayerPositionAndLookClient
+  static type: number = 0x38
   static state: number = PacketState.Play
 
   x: double = 0
@@ -16,7 +16,7 @@ export class PlayerPositionAndLookClientPacket extends Packet {
   dismount: boolean = false
 
   constructor() {
-    super(PlayerPositionAndLookClientPacket.type, PlayerPositionAndLookClientPacket.state)
+    super(PlayerPositionAndLookClientPacket.state, PlayerPositionAndLookClientPacket.type)
   }
 
   encode(): void {

@@ -1,12 +1,12 @@
 import { byte } from '../../../alias'
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 import { ChatMode } from '../../types/ChatMode'
 import { DisplayedSkinParts } from '../../types/DisplayedSkinParts'
 import { MainHand } from '../../types/MainHand'
 
 export class ClientSettingsPacket extends Packet {
 
-  static type: number = PacketType.ClientSettings
+  static type: number = 0x05
   static state: number = PacketState.Play
 
   locale: string = 'en_US'
@@ -24,7 +24,7 @@ export class ClientSettingsPacket extends Packet {
   allowServerListings: boolean = true
 
   constructor() {
-    super(ClientSettingsPacket.type, ClientSettingsPacket.state)
+    super(ClientSettingsPacket.state, ClientSettingsPacket.type)
   }
 
   encode(): void {

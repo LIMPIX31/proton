@@ -1,7 +1,7 @@
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 
 export class HandshakePacket extends Packet {
-  static type: number = PacketType.Handshake
+  static type: number = 0x00
   static state: number = PacketState.Handshaking
 
   protocol: number = 0
@@ -10,7 +10,7 @@ export class HandshakePacket extends Packet {
   nextState: PacketState = PacketState.Login
 
   constructor() {
-    super(HandshakePacket.type, HandshakePacket.state)
+    super(HandshakePacket.state, HandshakePacket.type)
   }
 
   decode(): void {

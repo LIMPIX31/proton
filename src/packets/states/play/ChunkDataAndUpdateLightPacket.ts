@@ -1,9 +1,8 @@
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 import { int, varint } from '../../../alias'
 import {
   ChunkBlockEntity,
   ChunkBlocksPayload,
-  ChunkSection,
   Heightmaps,
   LightArrays,
   superflatHeightmaps
@@ -14,7 +13,7 @@ import { ProtocolBuffer } from '../../../ProtocolBuffer'
 import { BitSet } from '../../../utils/BitSet'
 
 export class ChunkDataAndUpdateLightPacket extends Packet {
-  static type: number = PacketType.ChunkData
+  static type: number = 0x22
   static state: number = PacketState.Play
 
   chunkSections: number = 24
@@ -54,8 +53,8 @@ export class ChunkDataAndUpdateLightPacket extends Packet {
 
   constructor() {
     super(
-      ChunkDataAndUpdateLightPacket.type,
-      ChunkDataAndUpdateLightPacket.state
+      ChunkDataAndUpdateLightPacket.state,
+      ChunkDataAndUpdateLightPacket.type
     )
   }
 

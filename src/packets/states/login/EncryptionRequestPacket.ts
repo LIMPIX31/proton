@@ -1,9 +1,9 @@
 import { varint } from '../../../alias'
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 
 export class EncryptionRequestPacket extends Packet {
 
-  static type: number = PacketType.EncriptionRequest
+  static type: number = 0x01
   static state: number = PacketState.Login
 
   serverId: string = ''
@@ -13,7 +13,7 @@ export class EncryptionRequestPacket extends Packet {
   verifyToken: Buffer = Buffer.alloc(0)
 
   constructor() {
-    super(EncryptionRequestPacket.type, EncryptionRequestPacket.state)
+    super(EncryptionRequestPacket.state, EncryptionRequestPacket.type)
   }
 
   encode(): void {

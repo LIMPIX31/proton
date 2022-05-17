@@ -1,9 +1,9 @@
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 import { JSONChatComponent } from '../../types/JSONChatComponent'
 
 export class PlayDisconnectPacket extends Packet {
 
-  static type: number = PacketType.PlayDisconnect
+  static type: number = 0x1A
   static state: number = PacketState.Play
 
   reason: JSONChatComponent = {
@@ -11,7 +11,7 @@ export class PlayDisconnectPacket extends Packet {
   }
 
   constructor() {
-    super(PlayDisconnectPacket.type, PlayDisconnectPacket.state)
+    super(PlayDisconnectPacket.state, PlayDisconnectPacket.type)
   }
 
   decode(): void {

@@ -2,22 +2,22 @@ import { Varint } from '../datatypes/Varint'
 import { varint } from '../alias'
 import { ProtocolBuffer } from '../ProtocolBuffer'
 
-export enum PacketType {
-  Handshake = <any>0,
-  LoginStart = <any>0,
-  EncriptionRequest = <any>1,
-  LoginSuccess = <any>2,
-  JoinGame = <any>38,
-  KeepAliveServer = <any>16,
-  KeepAliveClient = <any>33,
-  PlayerPositionAndLookClient = <any>56,
-  PlayDisconnect = <any>26,
-  UnloadChunk = <any>29,
-  ClientSettings = <any>5,
-  ChunkData = <any>34,
-  UpdateViewPosition = <any>73,
-  Unknown = <any>-1,
-}
+// export enum PacketType {
+//   Handshake = <any>0,
+//   LoginStart = <any>0,
+//   EncriptionRequest = <any>1,
+//   LoginSuccess = <any>2,
+//   JoinGame = <any>38,
+//   KeepAliveServer = <any>16,
+//   KeepAliveClient = <any>33,
+//   PlayerPositionAndLookClient = <any>56,
+//   PlayDisconnect = <any>26,
+//   UnloadChunk = <any>29,
+//   ClientSettings = <any>5,
+//   ChunkData = <any>34,
+//   UpdateViewPosition = <any>73,
+//   Unknown = <any>-1,
+// }
 
 export enum PacketState {
   Handshaking = 0,
@@ -37,7 +37,7 @@ export class Packet extends ProtocolBuffer {
   static state: PacketState = PacketState.Handshaking
   private _length: varint = 1
 
-  constructor(public type: number, public state: number) {
+  constructor(public state: number, public type: number) {
     super()
   }
 
@@ -59,7 +59,7 @@ export class Packet extends ProtocolBuffer {
   static from(data: Buffer): [Packet, number] {
     const [length, o1] = new Varint().read(data)
     const [type, o2] = new Varint().read(data.slice(o1))
-    const packet = new Packet(type, -1)
+    const packet = new Packet(-1, type)
     packet.buffer = data.slice(o1 + o2, length - 1 + o1 + o2)
     if (packet.buffer.length !== length - 1)
       throw new Error('Invalid packet length')

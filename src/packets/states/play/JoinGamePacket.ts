@@ -2,12 +2,12 @@ import { BuildNBT } from '../../../datatypes/nbt/NBTModel'
 import { identifier, int, long, varint } from '../../../alias'
 import { DimensionCodecNBTModel } from '../../nbt-models/DimensionCodecNBTModel'
 import { DimensionNBTModel } from '../../nbt-models/DimensionNBTModel'
-import { Packet, PacketState, PacketType } from '../../Packet'
+import { Packet, PacketState } from '../../Packet'
 import { DefaultDimension, defaultDimensionCodec, DimensionCodec, DimensionType } from '../../types/DimensionRelated'
 import { Gamemode } from '../../types/Gamemode'
 export class JoinGamePacket extends Packet {
 
-  static type: number = PacketType.JoinGame
+  static type: number = 0x26
   static state: number = PacketState.Play
 
   entityId: int = 0
@@ -27,9 +27,9 @@ export class JoinGamePacket extends Packet {
   enableRespawnScreen: boolean = true
   isDebug: boolean = false
   isFlat: boolean = false
-  
+
   constructor() {
-    super(JoinGamePacket.type, JoinGamePacket.state)
+    super(JoinGamePacket.state, JoinGamePacket.type)
   }
 
   encode(): void {
