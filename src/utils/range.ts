@@ -1,4 +1,4 @@
-export function range(max: number): Generator<number>
+export function range(count: number): Generator<number>
 export function range(min: number, max: number): Generator<number>
 export function range(min: number, max: number, step: number): Generator<number>
 export function* range(
