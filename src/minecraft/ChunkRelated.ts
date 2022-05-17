@@ -4,18 +4,20 @@ export abstract class ChunkRelated {
   private _y: number = 0
   private _z: number = 0
 
-  protected constructor(x: number, y: number, z: number)
+  protected constructor()
 
-  protected constructor(x: number, z:number)
+  protected constructor(x?: number, y?: number, z?: number)
 
-  protected constructor(x: number, yz: number, z?: number) {
+  protected constructor(x?: number, z?:number)
+
+  protected constructor(x?: number, yz?: number, z?: number) {
     if(z !== undefined) {
-      this._x = x
-      this._y = yz
-      this._z = z
+      this._x = x ?? 0
+      this._y = yz ?? 0
+      this._z = z ?? 0
     } else {
-      this._x = x
-      this._z = yz
+      this._x = x ?? 0
+      this._z = yz ?? 0
     }
   }
 
